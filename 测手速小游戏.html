@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		#wrap {
+			margin: 10px auto;
+			width: 800px;
+			height: 550px;
+			text-align: center;
+		}
+		#box {
+			margin-top: 10px;
+			position: relative;
+			height: 480px;
+			width: 798px;
+			border: 1px solid green;
+		}
+		#score {
+			position: absolute;
+			left: -152px;
+			top: -1px;
+			width: 150px;
+			height: 80px;
+			border: 1px solid green;
+			background: #aa0;
+		}
+		#score span {
+			height: 40px;
+			line-height: 40px;
+			text-align: left;
+		}
+		#faceWrap {
+			position:relative;
+			height: 480px;
+			width: 798px;
+			overflow: hidden;
+		}
+		#faceBox {
+			position: absolute;
+			top: -26px;
+			left: 0;
+			width: 40px;
+			height: 24px;
+			-webkit-user-select:none;
+		}
+	</style>
+	<script src="js/MTween.js"></script>
+	<script src="js/tools.js"></script>
+	<script>
+
+		window.onload = function (){
+
+		    var start = $("#start");
+		    var box = $("#box");
+		    var score = $("#score");
+		    var aSpans = $("span",score);
+		    var oFace = $("#faceBox");
+		    var arrImg = ["img/1.png","img/2.png","img/3.png","img/4.png","img/5.png","img/6.png","img/7.png","img/8.png"];
+		    var onOff = true;
+		    var timer = null;
+		    var n1 = 0,n2 = 0,m = 5000;
+
+		    // 随机获得数组中的某一项
+		    function chooseNum (arr){
+		    	arr.sort(function (){
+		    		return 0.5 - Math.random();
+		    	})
+		   	 	return arr[0];
+		    }
+
+		    // 抖函数
+		    function shake(obj,attr,A,f,fn){
+		    	if( timer ) return;
+		    	var arr = [];
+		    	var n = 0;
+		    	for( var i = A; i >= 0; i -= f ){
+		    		arr.push(i,-i);
+		    	}
+		    	arr.push(0);
+		    	var l = parseInt(getStyle(obj,attr));
+		    	timer = setInterval( function (){
+		    		obj.style[attr] = l + arr[n] + "px";
+		    		n++;
+		    		if( n > arr.length - 1 ){
+		    			n = 0;
+		    			clearInterval( timer );
+		    			timer = null;
+		    			typeof fn === "function" && fn();
+		    		}
+		    	},16 )
+
+		    }
+
+		    function downImg(){
+	    		MTween(oFace,"top",m,500,"linear",function(){
+	    			n2++;
+    				aSpans[1].innerHTML = n2;         // 当表情掉到容器底部,失分+1
+	    			if( n2 === 10 ){
+	    				alert("游戏失败,请重新开始...");
+	    				n2 = 0;
+	    				n1 = 0;
+	    				aSpans[0].innerHTML = n1;	  // 积分清零
+	    				aSpans[1].innerHTML = n2;
+	    				start.value = "开始游戏";
+    					start.disabled = false;       // 将按钮设置为不可修改状态
+    					onOff = true;
+    					// 让表情容器回到初始位置
+    					oFace.style.top = "-26px";
+    					oFace.style.left = Math.round(Math.random()*760) + "px";
+    					oFace.innerHTML = '<img src="'+chooseNum(arrImg)+'" alt="">';
+    					return;
+	    			}
+	    			oFace.style.top = "-26px";
+    				oFace.style.left = Math.round(Math.random()*760) + "px";
+    				oFace.innerHTML = '<img src="'+chooseNum(arrImg)+'" alt="">';
+		    		shake(box,"top",10,2);
+    				downImg();
+		    	});
+	    	}
+
+	    	start.onclick = function (){
+
+	    		this.value = onOff ? "游戏正在进行中...":"开始游戏";
+	    		this.disabled = onOff ? true:false;
+	    		onOff = !onOff;
+		    	oFace.style.left = Math.round(Math.random()*760) + "px";
+		    	oFace.innerHTML = '<img src="'+chooseNum(arrImg)+'" alt="">';
+		    	downImg(); 	
+		    }
+
+		    oFace.onmousedown = function (){
+	    		clearInterval(oFace.timer);
+	    		this.innerHTML = '<img src="img/15.png" alt="">';
+	    		shake(oFace,"left",15,3,function (){
+	    			n1++;
+	    			m -= 250;
+	    			if( m <= 0 ){
+	    				m = 0;
+	    			}
+	    			aSpans[0].innerHTML = n1;
+	    			oFace.style.top = "-26px";
+	    			oFace.style.left = Math.round(Math.random()*760) + "px";
+	    			oFace.innerHTML = '<img src="'+chooseNum(arrImg)+'" alt="">';
+	    			downImg();
+	    		});
+		    	
+		    }
+		}
+	</script>
+</head>
+<body>
+	<div id="wrap">
+		<strong>你的鼠标有多快？</strong>
+		<p>游戏说明：点击“开始游戏”，随机掉下QQ表情，点中它，千万别让它掉下去！！</p>
+		<input type="button" value="开始游戏" id="start" />
+		<div id="box">
+			<div id="score">得分：<span>0</span>分<br>失分：<span>0</span>分
+			</div>
+			<div id="faceWrap">
+				<div id="faceBox">
+					<img src="" alt="">
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+    
